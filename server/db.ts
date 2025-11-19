@@ -36,9 +36,13 @@ export function initDb(){
       created_at TEXT DEFAULT CURRENT_TIMESTAMP
     );
   `);
+
   // seed if empty
-  const row = db.prepare('SELECT COUNT(*) as c FROM products').get();
-  if(row.c === 0){
+  const row = db.prepare('SELECT COUNT(*) as c FROM products').get() as unknown;
+  // safely extract count with runtime checking
+  const count = (row && typeof (row as any).c === 'number') ? (row as any).c : 0;
+
+  if(count === 0){
     const insert = db.prepare('INSERT INTO products (brand, model, price, ram_gb, storage_type, storage_gb, cpu, purpose, screen_in, gpu, images, description) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)');
     insert.run('ExampleBrand','Model A',49999,8,'SSD',512,'Intel i5','Office,Student',15.6,'',JSON.stringify([]),'A sample laptop');
     insert.run('GameTech','Gamer X',79999,16,'SSD',1024,'Intel i7','Gaming',17,'NVIDIA RTX 3060',JSON.stringify([]),'High performance laptop');
